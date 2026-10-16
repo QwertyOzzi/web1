@@ -8,12 +8,14 @@ const state = {
   products: [],
   filteredProducts: [],
   currentProduct: null,
+  isAdmin: false,
   settings: {
     store_name: "Arz MODS • Jimi Hopper",
     avatar_url: "/uploads/avatar.svg",
     bio: "Приватные сборки, топовые скрипты и сочная графика для SA-MP / Arizona RP.",
     telegram_username: "jimi_hopper",
-    currency: "₽"
+    currency: "₽",
+    admin_pin: "7777"
   },
   activeCategory: "all",
   searchQuery: "",
@@ -112,6 +114,16 @@ const elements = {
   settingAvatarFile: document.getElementById("setting-avatar-file"),
   settingAvatarUrl: document.getElementById("setting-avatar-url"),
   settingAvatarPreview: document.getElementById("setting-avatar-preview"),
+  settingAdminPin: document.getElementById("setting-admin-pin"),
+
+  // Admin Security & PIN Modal
+  btnAdminLogout: document.getElementById("btn-admin-logout"),
+  modalAdminPin: document.getElementById("modal-admin-pin"),
+  modalPinClose: document.getElementById("modal-pin-close"),
+  formAdminPin: document.getElementById("form-admin-pin"),
+  adminPinInput: document.getElementById("admin-pin-input"),
+  pinErrorMsg: document.getElementById("pin-error-msg"),
+  btnCancelPin: document.getElementById("btn-cancel-pin"),
 
   // Lightbox
   modalLightbox: document.getElementById("modal-lightbox"),
@@ -129,6 +141,7 @@ const elements = {
 async function init() {
   initCosmicStarfield();
   await Promise.all([loadSettings(), loadProducts()]);
+  setupAdminAuth();
   setupEventListeners();
   handleRoute();
 }
@@ -921,6 +934,9 @@ elements.btnOpenSettings.addEventListener("click", () => {
   elements.settingBio.value = state.settings.bio || "";
   elements.settingAvatarUrl.value = state.settings.avatar_url || "";
   elements.settingAvatarPreview.src = resolveMediaUrl(state.settings.avatar_url || "uploads/avatar.svg");
+  if (elements.settingAdminPin) {
+    elements.settingAdminPin.value = state.settings.admin_pin || "7777";
+  }
   elements.modalSettings.classList.remove("hidden");
 });
 
@@ -967,7 +983,8 @@ elements.formSettings.addEventListener("submit", async (e) => {
     store_name: elements.settingStoreName.value.trim(),
     telegram_username: elements.settingTelegram.value.trim().replace(/^@/, ""),
     bio: elements.settingBio.value.trim(),
-    avatar_url: elements.settingAvatarUrl.value.trim() || "uploads/avatar.svg"
+    avatar_url: elements.settingAvatarUrl.value.trim() || "uploads/avatar.svg",
+    admin_pin: (elements.settingAdminPin ? elements.settingAdminPin.value.trim() : "") || "7777"
   };
 
   let saved = false;
@@ -997,6 +1014,114 @@ elements.formSettings.addEventListener("submit", async (e) => {
 });
 
 // ==========================================
+// Admin Security & PIN Authentication
+// ==========================================
+
+function setAdminMode(active) {
+  state.isAdmin = Boolean(active);
+  if (state.isAdmin) {
+    document.body.classList.add("is-admin");
+    localStorage.setItem("cosmic_admin_auth", "true");
+  } else {
+    document.body.classList.remove("is-admin");
+    localStorage.removeItem("cosmic_admin_auth");
+  }
+}
+
+function openAdminPinModal() {
+  if (!elements.modalAdminPin) return;
+  if (elements.pinErrorMsg) elements.pinErrorMsg.classList.add("hidden");
+  if (elements.adminPinInput) {
+    elements.adminPinInput.value = "";
+  }
+  elements.modalAdminPin.classList.remove("hidden");
+  setTimeout(() => {
+    if (elements.adminPinInput) elements.adminPinInput.focus();
+  }, 100);
+}
+
+function closeAdminPinModal() {
+  if (elements.modalAdminPin) {
+    elements.modalAdminPin.classList.add("hidden");
+  }
+}
+
+function setupAdminAuth() {
+  // 1. Restore auth state if already logged in
+  if (localStorage.getItem("cosmic_admin_auth") === "true") {
+    setAdminMode(true);
+  }
+
+  // 2. Secret link access: check for ?admin or #admin
+  const queryStr = window.location.search.toLowerCase();
+  const hashStr = window.location.hash.toLowerCase();
+  if (queryStr.includes("admin") || hashStr.includes("admin")) {
+    if (state.isAdmin) {
+      showToast("👑 Режим владельца активен");
+    } else {
+      openAdminPinModal();
+    }
+  }
+
+  // 3. Secret logo gesture: 3 clicks within 2.2 seconds
+  let brandClicks = [];
+  if (elements.navBrandBtn) {
+    elements.navBrandBtn.addEventListener("click", () => {
+      const now = Date.now();
+      brandClicks.push(now);
+      brandClicks = brandClicks.filter(t => now - t < 2200);
+      if (brandClicks.length >= 3) {
+        brandClicks = [];
+        if (!state.isAdmin) {
+          openAdminPinModal();
+        } else {
+          showToast("👑 Вы уже в режиме администратора");
+        }
+      }
+    });
+  }
+
+  // 4. PIN Submit
+  if (elements.formAdminPin) {
+    elements.formAdminPin.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const entered = elements.adminPinInput ? elements.adminPinInput.value.trim() : "";
+      const validPin = (state.settings && state.settings.admin_pin) ? String(state.settings.admin_pin).trim() : "7777";
+
+      if (entered === validPin) {
+        setAdminMode(true);
+        closeAdminPinModal();
+        showToast("🔓 Доступ разрешен! Панель управления активирована.");
+      } else {
+        if (elements.pinErrorMsg) {
+          elements.pinErrorMsg.classList.remove("hidden");
+        }
+        if (elements.adminPinInput) {
+          elements.adminPinInput.value = "";
+          elements.adminPinInput.focus();
+        }
+      }
+    });
+  }
+
+  // 5. Cancel / Close buttons
+  if (elements.btnCancelPin) {
+    elements.btnCancelPin.addEventListener("click", closeAdminPinModal);
+  }
+  if (elements.modalPinClose) {
+    elements.modalPinClose.addEventListener("click", closeAdminPinModal);
+  }
+
+  // 6. Logout
+  if (elements.btnAdminLogout) {
+    elements.btnAdminLogout.addEventListener("click", () => {
+      setAdminMode(false);
+      showToast("🔒 Вы вышли из режима администратора");
+    });
+  }
+}
+
+// ==========================================
 // Event Listeners & Helpers
 // ==========================================
 
@@ -1016,8 +1141,8 @@ function setupEventListeners() {
         elements.modalLightbox.classList.add("hidden");
         return;
       }
-      // 2. Open Modals
-      const openModals = [elements.modalBuy, elements.modalProduct, elements.modalSettings];
+      // 2. Open Modals (including PIN modal)
+      const openModals = [elements.modalBuy, elements.modalProduct, elements.modalSettings, elements.modalAdminPin];
       const visibleModal = openModals.find(m => m && !m.classList.contains("hidden"));
       if (visibleModal) {
         visibleModal.classList.add("hidden");
@@ -1071,12 +1196,14 @@ function setupEventListeners() {
   });
 
   // Overlay click to close modals
-  [elements.modalBuy, elements.modalProduct, elements.modalSettings].forEach(modal => {
-    modal.addEventListener("click", (e) => {
-      if (e.target === modal) {
-        modal.classList.add("hidden");
-      }
-    });
+  [elements.modalBuy, elements.modalProduct, elements.modalSettings, elements.modalAdminPin].forEach(modal => {
+    if (modal) {
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) {
+          modal.classList.add("hidden");
+        }
+      });
+    }
   });
 }
 

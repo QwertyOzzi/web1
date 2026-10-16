@@ -1767,3 +1767,87 @@ html, body {
   from { opacity: 0; transform: scale(0.96); }
   to { opacity: 1; transform: scale(1); }
 }
+
+/* ============================================================
+   ADMIN ACCESS & SECURITY (LINK + PIN AUTHORIZATION)
+   ============================================================ */
+
+.admin-only {
+  display: none !important;
+}
+
+body.is-admin .admin-only {
+  display: inline-flex !important;
+}
+
+body.is-admin div.admin-only,
+body.is-admin .console-admin-bar.admin-only {
+  display: flex !important;
+}
+
+/* Modal: PIN Auth */
+.modal-box-pin {
+  max-width: 440px;
+  text-align: center;
+  border-color: rgba(0, 242, 254, 0.4);
+}
+
+.modal-box-pin .cosmic-modal-form {
+  align-items: center;
+  gap: 20px;
+  padding: 28px 24px 24px;
+}
+
+.pin-hint-text {
+  font-size: 0.94rem;
+  color: var(--text-stellar);
+  line-height: 1.5;
+  margin: 0;
+  max-width: 320px;
+}
+
+.pin-input-wrapper {
+  width: 100%;
+  max-width: 250px;
+  margin: 4px auto 0;
+}
+
+.pin-input-wrapper input {
+  width: 100%;
+  font-family: monospace, inherit;
+  font-size: 2.2rem;
+  letter-spacing: 0.35em;
+  text-align: center;
+  padding: 12px 16px;
+  background: rgba(10, 15, 28, 0.95);
+  border: 2px solid var(--border-cosmic-hover);
+  border-radius: var(--radius-md);
+  color: var(--neon-cyan);
+  outline: none;
+  font-weight: 800;
+  transition: all var(--duration-fast);
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.6);
+}
+
+.pin-input-wrapper input:focus {
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 25px rgba(0, 242, 254, 0.45), inset 0 2px 10px rgba(0, 0, 0, 0.6);
+}
+
+.pin-error-text {
+  color: var(--neon-pink);
+  font-size: 0.88rem;
+  font-weight: 700;
+  background: rgba(247, 37, 133, 0.12);
+  border: 1px solid rgba(247, 37, 133, 0.35);
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  animation: pinShake 0.4s ease;
+}
+
+@keyframes pinShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+

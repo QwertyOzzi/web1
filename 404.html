@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Redirecting to Cosmic Store...</title>
+  <script>
+    // GitHub Pages SPA redirector
+    // Takes /web1/p/slug and redirects to /web1/#/p/slug or /web1/?p=slug
+    var path = window.location.pathname;
+    var repoName = "/web1";
+    if (path.startsWith(repoName)) {
+      path = path.substring(repoName.length);
+    }
+    if (path.startsWith("/p/")) {
+      var slug = path.substring(3);
+      window.location.replace(window.location.origin + repoName + "/?p=" + encodeURIComponent(slug));
+    } else {
+      window.location.replace(window.location.origin + repoName + "/");
+    }
+  </script>
+</head>
+<body style="background:#000;color:#fff;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;">
+  <p>Перенаправление в космическую витрину...</p>
+</body>
+</html>

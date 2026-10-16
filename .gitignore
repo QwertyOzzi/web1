@@ -1,0 +1,11 @@
+# Portable tools & caches
+.tools/
+__pycache__/
+*.pyc
+
+# Local SQLite database (keep products.json for static GitHub Pages)
+data/store.db
+
+# OS files
+Thumbs.db
+.DS_Store

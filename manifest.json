@@ -1,0 +1,16 @@
+{
+  "name": "Arz MODS • Cosmic Digital Store",
+  "short_name": "Arz MODS",
+  "description": "Приватные сборки, топовые скрипты и сочная графика для SA-MP / Arizona RP.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#030408",
+  "theme_color": "#030408",
+  "icons": [
+    {
+      "src": "uploads/avatar.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

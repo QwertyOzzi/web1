@@ -1,0 +1,27 @@
+# Arz MODS Storefront
+
+> Arz MODS (Jimi Hopper) is a specialized digital storefront and modding studio providing private game assemblies, helper scripts, graphic packs (ColorMod), and custom modifications for SA-MP and Arizona RP.
+
+## Overview
+- Website: https://qwertyozzi.github.io/web1/
+- Store Owner: Jimi Hopper (@jimi_hopper)
+- Platform: SA-MP / Arizona RP / GTA San Andreas
+- Language: Russian (ru)
+- Currency: RUB (₽)
+- Contact: https://t.me/jimi_hopper
+
+## Products Catalog
+- [Gta by Jimi_Hopper](https://qwertyozzi.github.io/web1/?p=ByO): Flagship gray graphics assembly with custom shaders, private script, bear accessories, and weapon replacements for Kalashnikov & Sawed-off. Price: 490 ₽.
+- [Private ARZ Helper Script v2.5](https://qwertyozzi.github.io/web1/?p=arizona-helper): Safe and optimized assistant script featuring smart fast-connect, custom inventory, capture timers, and resource management. Price: 290 ₽.
+- [Atmospheric Gray & Sunset ColorMod Pack](https://qwertyozzi.github.io/web1/?p=colormod-pack): 3 preset color modifications (Gray Cold, Sunset Warm, Film Dark) with zero FPS loss. Price: 150 ₽.
+
+## Categories
+- Сборки (Assemblies): Complete game client modifications and graphics packs.
+- Скрипты (Scripts): Automation, helpers, and utilities for Arizona RP.
+- Графика (Graphics): ColorMod, timecycle, textures, and visual enhancements.
+- Аксы (Accessories): Visual items and character customizations.
+
+## Purchasing & Delivery
+- Payments: Instant transfer via SBP, Russian bank cards, YuMoney, and Crypto.
+- Delivery: Immediate digital delivery via private download links or Telegram.
+- Support: Direct customer support from Jimi Hopper via Telegram @jimi_hopper.

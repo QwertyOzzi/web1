@@ -530,6 +530,14 @@ function showCatalogView() {
   elements.catalogView.classList.remove("hidden");
   elements.productView.classList.add("hidden");
   elements.btnBackNav.classList.add("hidden");
+  
+  // Dynamic SEO meta tags for Catalog
+  document.title = `${state.settings.store_name || "Arz MODS"} • Cosmic Digital Store`;
+  const metaDesc = document.querySelector('meta[name="description"]');
+  if (metaDesc) {
+    metaDesc.setAttribute("content", state.settings.bio || "Приватные сборки, топовые скрипты и сочная графика для SA-MP / Arizona RP от Jimi Hopper.");
+  }
+  
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -556,6 +564,15 @@ async function showProductView(slug) {
   state.currentProduct = product;
   renderProductDetail(product);
 
+  // Dynamic SEO meta tags for Product
+  document.title = `${product.title} • Arz MODS`;
+  const metaDesc = document.querySelector('meta[name="description"]');
+  if (metaDesc) {
+    metaDesc.setAttribute("content", `${product.title}: ${product.short_desc || "Приватный цифровой товар для SA-MP / Arizona RP."}`);
+  }
+  const ogTitle = document.querySelector('meta[property="og:title"]');
+  if (ogTitle) ogTitle.setAttribute("content", `${product.title} • Arz MODS`);
+
   elements.catalogView.classList.add("hidden");
   elements.productView.classList.remove("hidden");
   elements.btnBackNav.classList.remove("hidden");
@@ -574,12 +591,8 @@ function renderProductDetail(product) {
   elements.detailBadge.textContent = product.badge || "Цифровой архив";
   elements.detailCategoryTag.textContent = product.category || "Сборки";
 
-  // Cover image
-  if (product.image_url) {
-    elements.detailImage.src = product.image_url;
-  } else {
-    elements.detailImage.src = "/uploads/avatar.svg";
-  }
+  // Cover image with fallback
+  elements.detailImage.src = resolveMediaUrl(product.image_url || "uploads/avatar.svg");
 
   // Description
   elements.detailDescription.textContent = product.description || product.short_desc || "Подробное описание скоро появится.";
@@ -628,14 +641,14 @@ function renderCatalog() {
     const card = document.createElement("article");
     card.className = "cosmic-product-card";
     
-    const imgUrl = prod.image_url || "/uploads/avatar.svg";
+    const imgUrl = resolveMediaUrl(prod.image_url || "uploads/avatar.svg");
     const badgeText = prod.badge || "Цифровой товар";
     const priceText = `${prod.price} ${prod.currency || "₽"}`;
     const descText = prod.short_desc || prod.description || "";
 
     card.innerHTML = `
       <div class="card-media-box">
-        <img src="${escapeHtml(imgUrl)}" alt="${escapeHtml(prod.title)}" class="card-img-cover" loading="lazy" />
+        <img src="${escapeHtml(imgUrl)}" alt="${escapeHtml(prod.title)}" class="card-img-cover" width="400" height="225" loading="lazy" decoding="async" />
         <span class="card-badge-cosmic">${escapeHtml(badgeText)}</span>
         <span class="card-price-cosmic">${escapeHtml(priceText)}</span>
       </div>
@@ -685,7 +698,7 @@ elements.btnBuyAction.addEventListener("click", () => {
   const prod = state.currentProduct;
   if (!prod) return;
 
-  elements.buyModalThumb.src = prod.image_url || "/uploads/avatar.svg";
+  elements.buyModalThumb.src = resolveMediaUrl(prod.image_url || "uploads/avatar.svg");
   elements.buyModalTitle.textContent = prod.title;
   elements.buyModalPrice.textContent = `${prod.price} ${prod.currency || "₽"}`;
 

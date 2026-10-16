@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Admin area exclusion
+Disallow: /*?admin
+Disallow: /*#admin
+
+# Sitemap location
+Sitemap: https://qwertyozzi.github.io/web1/sitemap.xml

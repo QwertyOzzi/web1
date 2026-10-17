@@ -804,18 +804,36 @@ elements.btnDeleteCurrent.addEventListener("click", async () => {
   if (!prod) return;
 
   if (confirm(`Вы действительно хотите удалить "${prod.title}"?`)) {
+    let deleted = false;
     try {
       const res = await fetch(`/api/products/${prod.id}`, { method: "DELETE" });
-      if (res.ok) {
-        showToast("Товар удален");
-        await loadProducts();
-        navigateToCatalog();
-      } else {
-        showToast("Ошибка при удалении");
+      if (res && res.ok) {
+        deleted = true;
       }
     } catch (e) {
-      console.error(e);
-      showToast("Ошибка сети");
+      // offline or GitHub Pages
+    }
+
+    if (!deleted) {
+      state.products = state.products.filter(p => String(p.id) !== String(prod.id));
+      localStorage.setItem("cosmic_products", JSON.stringify(state.products));
+      deleted = true;
+
+      if (window.location.hostname.includes("github.io") || window.location.protocol === "file:") {
+        const savedToken = localStorage.getItem("cosmic_github_token");
+        if (savedToken) {
+          showToast("Товар удален! Синхронизация с GitHub...");
+          startPublishingProcess(true);
+        } else {
+          markUnpublishedChanges();
+          showToast("Товар удален! Нажмите «Опубликовать для всех», чтобы применить на сайте.");
+        }
+      }
+    }
+
+    if (deleted) {
+      filterProducts();
+      navigateToCatalog();
     }
   }
 });
@@ -1183,6 +1201,18 @@ function setupAdminAuth() {
 // GitHub Cloud Direct Publishing & Data Export
 // ==========================================
 
+function markUnpublishedChanges() {
+  if (elements.btnAdminPublish) {
+    elements.btnAdminPublish.classList.add("has-unsaved");
+  }
+}
+
+function clearUnpublishedChanges() {
+  if (elements.btnAdminPublish) {
+    elements.btnAdminPublish.classList.remove("has-unsaved");
+  }
+}
+
 function openPublishModal() {
   if (!elements.modalPublishConfirm) return;
   const savedToken = localStorage.getItem("cosmic_github_token") || "";
@@ -1206,6 +1236,7 @@ function closePublishModal() {
 }
 
 async function uploadOrUpdateFileToGitHub(token, path, contentBase64, commitMsg) {
+  const cleanToken = token.trim().replace(/^['"]|['"]$/g, '');
   const repo = "QwertyOzzi/web1";
   const apiUrl = `https://api.github.com/repos/${repo}/contents/${path}`;
 
@@ -1213,7 +1244,7 @@ async function uploadOrUpdateFileToGitHub(token, path, contentBase64, commitMsg)
   try {
     const res = await fetch(apiUrl, {
       headers: {
-        "Authorization": `token ${token}`,
+        "Authorization": `Bearer ${cleanToken}`,
         "Accept": "application/vnd.github.v3+json"
       }
     });
@@ -1222,7 +1253,7 @@ async function uploadOrUpdateFileToGitHub(token, path, contentBase64, commitMsg)
       sha = data.sha;
     }
   } catch (e) {
-    // File may not exist yet
+    // File may not exist yet in repo
   }
 
   const payload = {
@@ -1237,7 +1268,7 @@ async function uploadOrUpdateFileToGitHub(token, path, contentBase64, commitMsg)
   const putRes = await fetch(apiUrl, {
     method: "PUT",
     headers: {
-      "Authorization": `token ${token}`,
+      "Authorization": `Bearer ${cleanToken}`,
       "Accept": "application/vnd.github.v3+json",
       "Content-Type": "application/json"
     },
@@ -1246,7 +1277,13 @@ async function uploadOrUpdateFileToGitHub(token, path, contentBase64, commitMsg)
 
   if (!putRes.ok) {
     const errObj = await putRes.json().catch(() => ({}));
-    throw new Error(errObj.message || `HTTP error ${putRes.status}`);
+    let msg = errObj.message || `HTTP ${putRes.status}`;
+    if (putRes.status === 401) {
+      msg = "Неверный GitHub токен. Убедитесь, что токен скопирован полностью (начинается на ghp_).";
+    } else if (putRes.status === 403 || putRes.status === 404) {
+      msg = "Нет прав на запись в репозиторий QwertyOzzi/web1. Убедитесь, что у токена отмечена галочка 'repo'.";
+    }
+    throw new Error(msg);
   }
 
   return await putRes.json();
@@ -1261,26 +1298,60 @@ function stringToBase64Utf8(str) {
   return btoa(binary);
 }
 
-async function startPublishingProcess() {
-  const token = (elements.publishGithubToken ? elements.publishGithubToken.value.trim() : "") || localStorage.getItem("cosmic_github_token") || "";
+function generateSitemapXml(products) {
+  const today = new Date().toISOString().split("T")[0];
+  let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
+  xml += `  <url>\n    <loc>https://qwertyozzi.github.io/web1/</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>daily</changefreq>\n    <priority>1.0</priority>\n  </url>\n`;
+  products.forEach(p => {
+    const slug = p.slug || p.id;
+    xml += `  <url>\n    <loc>https://qwertyozzi.github.io/web1/?p=${encodeURIComponent(slug)}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>\n  </url>\n`;
+  });
+  xml += `</urlset>\n`;
+  return xml;
+}
+
+function generateLlmsTxt(products, settings) {
+  const name = settings.store_name || "Arz MODS";
+  const tg = (settings.telegram_username || "jimi_hopper").replace(/^@/, "");
+  let txt = `# ${name} Storefront\n\n> ${settings.bio || "Digital storefront for SA-MP / Arizona RP"}\n\n`;
+  txt += `## Overview\n- Website: https://qwertyozzi.github.io/web1/\n- Store Owner: Jimi Hopper (@${tg})\n- Contact: https://t.me/${tg}\n\n`;
+  txt += `## Products Catalog\n`;
+  products.forEach(p => {
+    txt += `- [${p.title}](https://qwertyozzi.github.io/web1/?p=${encodeURIComponent(p.slug || p.id)}): ${p.short_desc || p.title}. Price: ${p.price} ${p.currency || "₽"}.\n`;
+  });
+  return txt;
+}
+
+async function startPublishingProcess(isSilent = false) {
+  const rawToken = (elements.publishGithubToken ? elements.publishGithubToken.value.trim() : "") || localStorage.getItem("cosmic_github_token") || "";
+  const token = rawToken.trim().replace(/^['"]|['"]$/g, '');
+
   if (!token) {
-    alert("Пожалуйста, введите ваш GitHub Personal Access Token (начинается на ghp_)!");
-    if (elements.publishGithubToken) elements.publishGithubToken.focus();
+    openPublishModal();
     return;
   }
 
   localStorage.setItem("cosmic_github_token", token);
-  elements.btnStartPublish.disabled = true;
-  elements.btnStartPublish.textContent = "Публикация...";
-  elements.publishStatusBox.classList.remove("hidden");
-  elements.publishStatusText.textContent = "1/3 Проверка изображений...";
+
+  if (!isSilent) {
+    if (elements.btnStartPublish) {
+      elements.btnStartPublish.disabled = true;
+      elements.btnStartPublish.textContent = "Публикация...";
+    }
+    if (elements.publishStatusBox) elements.publishStatusBox.classList.remove("hidden");
+    if (elements.publishStatusText) elements.publishStatusText.textContent = "1/4 Обработка изображений...";
+  } else {
+    showToast("⏳ Публикация изменений в репозиторий GitHub...");
+  }
 
   try {
     // 1. Process base64 images in products
     for (let i = 0; i < state.products.length; i++) {
       const p = state.products[i];
       if (p.image_url && p.image_url.startsWith("data:image/")) {
-        elements.publishStatusText.textContent = `Загрузка обложки "${p.title}" в GitHub...`;
+        if (!isSilent && elements.publishStatusText) {
+          elements.publishStatusText.textContent = `Загрузка обложки "${p.title}" в GitHub...`;
+        }
         const commaIdx = p.image_url.indexOf(",");
         const meta = p.image_url.substring(0, commaIdx);
         const base64Data = p.image_url.substring(commaIdx + 1);
@@ -1291,14 +1362,16 @@ async function startPublishingProcess() {
         
         const filename = `img_${Date.now()}_${Math.random().toString(36).substring(2, 6)}${ext}`;
         const targetPath = `uploads/${filename}`;
-        await uploadOrUpdateFileToGitHub(token, targetPath, base64Data, `Upload product image ${filename}`);
+        await uploadOrUpdateFileToGitHub(token, targetPath, base64Data, `Upload product cover ${filename}`);
         p.image_url = targetPath;
       }
     }
 
     // 2. Process base64 avatar in settings
     if (state.settings.avatar_url && state.settings.avatar_url.startsWith("data:image/")) {
-      elements.publishStatusText.textContent = "Загрузка аватарки в GitHub...";
+      if (!isSilent && elements.publishStatusText) {
+        elements.publishStatusText.textContent = "Загрузка аватарки в GitHub...";
+      }
       const commaIdx = state.settings.avatar_url.indexOf(",");
       const base64Data = state.settings.avatar_url.substring(commaIdx + 1);
       const filename = `avatar_${Date.now()}.png`;
@@ -1309,30 +1382,65 @@ async function startPublishingProcess() {
     }
 
     // 3. Publish data/products.json
-    elements.publishStatusText.textContent = "2/3 Обновление каталога товаров (products.json)...";
+    if (!isSilent && elements.publishStatusText) {
+      elements.publishStatusText.textContent = "2/4 Обновление каталога товаров (products.json)...";
+    }
     const productsJson = JSON.stringify(state.products, null, 2);
     await uploadOrUpdateFileToGitHub(token, "data/products.json", stringToBase64Utf8(productsJson), "Update products catalog via Cosmic Admin");
     localStorage.setItem("cosmic_products", productsJson);
 
     // 4. Publish data/settings.json
-    elements.publishStatusText.textContent = "3/3 Обновление настроек магазина (settings.json)...";
+    if (!isSilent && elements.publishStatusText) {
+      elements.publishStatusText.textContent = "3/4 Обновление настроек магазина (settings.json)...";
+    }
     const settingsClean = { ...state.settings };
     delete settingsClean.github_token;
     const settingsJson = JSON.stringify(settingsClean, null, 2);
     await uploadOrUpdateFileToGitHub(token, "data/settings.json", stringToBase64Utf8(settingsJson), "Update settings via Cosmic Admin");
     localStorage.setItem("cosmic_settings", settingsJson);
 
-    elements.publishStatusText.textContent = "🎉 Успешно отправлено в репозиторий GitHub!";
-    showToast("🚀 Сайт успешно обновлен на GitHub! Изменения станут видны всем через 30-45 секунд.");
-    setTimeout(() => {
-      closePublishModal();
-    }, 1500);
+    // 5. Update sitemap.xml and llms.txt for SEO & AI assistants
+    if (!isSilent && elements.publishStatusText) {
+      elements.publishStatusText.textContent = "4/4 Обновление sitemap.xml и llms.txt...";
+    }
+    try {
+      const sitemapContent = generateSitemapXml(state.products);
+      await uploadOrUpdateFileToGitHub(token, "sitemap.xml", stringToBase64Utf8(sitemapContent), "Update sitemap.xml");
+
+      const llmsContent = generateLlmsTxt(state.products, state.settings);
+      await uploadOrUpdateFileToGitHub(token, "llms.txt", stringToBase64Utf8(llmsContent), "Update llms.txt");
+    } catch (e) {
+      console.warn("Could not sync sitemap/llms:", e);
+    }
+
+    clearUnpublishedChanges();
+
+    if (!isSilent) {
+      if (elements.publishStatusText) {
+        elements.publishStatusText.textContent = "🎉 Успешно отправлено в репозиторий GitHub!";
+      }
+      showToast("🚀 Сайт обновлен на GitHub! Через 30–45 секунд изменения появятся для всех посетителей.");
+      setTimeout(() => {
+        closePublishModal();
+      }, 1500);
+    } else {
+      showToast("✅ Изменения опубликованы на GitHub для всех устройств (через 30–45 сек)");
+    }
 
   } catch (err) {
     console.error("Publish error:", err);
-    elements.publishStatusText.textContent = `❌ Ошибка публикации: ${err.message}`;
-    elements.btnStartPublish.disabled = false;
-    elements.btnStartPublish.textContent = "Попробовать снова";
+    if (!isSilent) {
+      if (elements.publishStatusText) {
+        elements.publishStatusText.textContent = `❌ Ошибка: ${err.message}`;
+      }
+      if (elements.btnStartPublish) {
+        elements.btnStartPublish.disabled = false;
+        elements.btnStartPublish.textContent = "Попробовать снова";
+      }
+    } else {
+      showToast(`❌ Ошибка отправки на GitHub: ${err.message}`);
+      openPublishModal();
+    }
   }
 }
 

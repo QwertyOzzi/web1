@@ -122,11 +122,44 @@ def init_db():
         
     conn.commit()
     conn.close()
+    sync_json_files()
 
 def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
+
+def sync_json_files():
+    """Auto-exports SQLite database to data/products.json and data/settings.json so Git push deploys latest data."""
+    try:
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM products ORDER BY id DESC")
+        products = [dict(row) for row in cursor.fetchall()]
+
+        cursor.execute("SELECT key, value FROM settings")
+        settings = {row["key"]: row["value"] for row in cursor.fetchall()}
+        conn.close()
+
+        data_dir = os.path.join(BASE_DIR, "data")
+        os.makedirs(data_dir, exist_ok=True)
+
+        with open(os.path.join(data_dir, "products.json"), "w", encoding="utf-8") as f:
+            json.dump(products, f, ensure_ascii=False, indent=2)
+
+        with open(os.path.join(data_dir, "settings.json"), "w", encoding="utf-8") as f:
+            json.dump(settings, f, ensure_ascii=False, indent=2)
+
+        # Also sync public/data if present
+        pub_data = os.path.join(BASE_DIR, "public", "data")
+        if os.path.exists(pub_data):
+            with open(os.path.join(pub_data, "products.json"), "w", encoding="utf-8") as f:
+                json.dump(products, f, ensure_ascii=False, indent=2)
+            with open(os.path.join(pub_data, "settings.json"), "w", encoding="utf-8") as f:
+                json.dump(settings, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"[Warning] Could not export JSON files: {e}")
+
 
 class StoreHTTPRequestHandler(BaseHTTPRequestHandler):
     def end_headers(self):
@@ -253,6 +286,7 @@ class StoreHTTPRequestHandler(BaseHTTPRequestHandler):
                 cursor.execute("SELECT * FROM products WHERE id = ?", (product_id,))
                 new_row = dict(cursor.fetchone())
                 conn.close()
+                sync_json_files()
                 self.send_json({"success": True, "product": new_row}, status=201)
             except sqlite3.IntegrityError:
                 # slug collision, regenerate with suffix
@@ -271,6 +305,7 @@ class StoreHTTPRequestHandler(BaseHTTPRequestHandler):
                 cursor.execute("SELECT * FROM products WHERE id = ?", (product_id,))
                 new_row = dict(cursor.fetchone())
                 conn.close()
+                sync_json_files()
                 self.send_json({"success": True, "product": new_row}, status=201)
             return
 
@@ -291,6 +326,7 @@ class StoreHTTPRequestHandler(BaseHTTPRequestHandler):
             cursor.execute("SELECT key, value FROM settings")
             updated = {row["key"]: row["value"] for row in cursor.fetchall()}
             conn.close()
+            sync_json_files()
             self.send_json({"success": True, "settings": updated})
             return
 
@@ -373,6 +409,7 @@ class StoreHTTPRequestHandler(BaseHTTPRequestHandler):
             cursor.execute("SELECT * FROM products WHERE id = ?", (prod_id,))
             updated_prod = dict(cursor.fetchone())
             conn.close()
+            sync_json_files()
             self.send_json({"success": True, "product": updated_prod})
             return
 
@@ -395,6 +432,7 @@ class StoreHTTPRequestHandler(BaseHTTPRequestHandler):
             conn.commit()
             conn.close()
             if deleted:
+                sync_json_files()
                 self.send_json({"success": True})
             else:
                 self.send_json({"error": "Product not found"}, status=404)

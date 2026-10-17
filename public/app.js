@@ -115,6 +115,9 @@ const elements = {
   settingAvatarUrl: document.getElementById("setting-avatar-url"),
   settingAvatarPreview: document.getElementById("setting-avatar-preview"),
   settingAdminPin: document.getElementById("setting-admin-pin"),
+  settingGithubToken: document.getElementById("setting-github-token"),
+  btnExportProducts: document.getElementById("btn-export-products"),
+  btnExportSettings: document.getElementById("btn-export-settings"),
 
   // Admin Security & PIN Modal
   btnAdminLogout: document.getElementById("btn-admin-logout"),
@@ -124,6 +127,16 @@ const elements = {
   adminPinInput: document.getElementById("admin-pin-input"),
   pinErrorMsg: document.getElementById("pin-error-msg"),
   btnCancelPin: document.getElementById("btn-cancel-pin"),
+
+  // Admin Publish to GitHub
+  btnAdminPublish: document.getElementById("btn-admin-publish"),
+  modalPublishConfirm: document.getElementById("modal-publish-confirm"),
+  modalPublishClose: document.getElementById("modal-publish-close"),
+  btnCancelPublish: document.getElementById("btn-cancel-publish"),
+  btnStartPublish: document.getElementById("btn-start-publish"),
+  publishGithubToken: document.getElementById("publish-github-token"),
+  publishStatusBox: document.getElementById("publish-status-box"),
+  publishStatusText: document.getElementById("publish-status-text"),
 
   // Lightbox
   modalLightbox: document.getElementById("modal-lightbox"),
@@ -931,11 +944,17 @@ elements.formProduct.addEventListener("submit", async (e) => {
   }
 
   if (savedSuccessfully) {
-    showToast(state.editingProductId ? "Товар обновлен!" : "Товар добавлен!");
     elements.modalProduct.classList.add("hidden");
     filterProducts();
     if (finalProduct) {
       navigateToProduct(finalProduct.slug || finalProduct.id);
+    }
+    
+    // Check if running on GitHub Pages
+    if (window.location.hostname.includes("github.io") || window.location.protocol === "file:") {
+      showToast(state.editingProductId ? "Товар обновлен! Нажмите «Опубликовать для всех»." : "Товар добавлен! Нажмите «Опубликовать для всех».");
+    } else {
+      showToast(state.editingProductId ? "Товар обновлен!" : "Товар добавлен!");
     }
   }
 });
@@ -950,11 +969,28 @@ elements.btnOpenSettings.addEventListener("click", () => {
   if (elements.settingAdminPin) {
     elements.settingAdminPin.value = state.settings.admin_pin || "7777";
   }
+  if (elements.settingGithubToken) {
+    elements.settingGithubToken.value = localStorage.getItem("cosmic_github_token") || "";
+  }
   elements.modalSettings.classList.remove("hidden");
 });
 
 elements.btnCancelSettings.addEventListener("click", () => elements.modalSettings.classList.add("hidden"));
 elements.modalSettingsClose.addEventListener("click", () => elements.modalSettings.classList.add("hidden"));
+
+// Data Export Buttons
+if (elements.btnExportProducts) {
+  elements.btnExportProducts.addEventListener("click", () => {
+    downloadJson("products.json", state.products);
+  });
+}
+if (elements.btnExportSettings) {
+  elements.btnExportSettings.addEventListener("click", () => {
+    const cleanSettings = { ...state.settings };
+    delete cleanSettings.github_token;
+    downloadJson("settings.json", cleanSettings);
+  });
+}
 
 elements.settingAvatarFile.addEventListener("change", async (e) => {
   const file = e.target.files[0];
@@ -1000,6 +1036,10 @@ elements.formSettings.addEventListener("submit", async (e) => {
     admin_pin: (elements.settingAdminPin ? elements.settingAdminPin.value.trim() : "") || "7777"
   };
 
+  if (elements.settingGithubToken && elements.settingGithubToken.value.trim()) {
+    localStorage.setItem("cosmic_github_token", elements.settingGithubToken.value.trim());
+  }
+
   let saved = false;
   try {
     const res = await fetch("/api/settings", {
@@ -1023,7 +1063,12 @@ elements.formSettings.addEventListener("submit", async (e) => {
   localStorage.setItem("cosmic_settings", JSON.stringify(state.settings));
   applySettingsToUI();
   elements.modalSettings.classList.add("hidden");
-  showToast("Настройки успешно сохранены!");
+  
+  if (window.location.hostname.includes("github.io") || window.location.protocol === "file:") {
+    showToast("Настройки сохранены! Нажмите «Опубликовать для всех», чтобы выгрузить на сайт.");
+  } else {
+    showToast("Настройки успешно сохранены!");
+  }
 });
 
 // ==========================================
@@ -1135,6 +1180,176 @@ function setupAdminAuth() {
 }
 
 // ==========================================
+// GitHub Cloud Direct Publishing & Data Export
+// ==========================================
+
+function openPublishModal() {
+  if (!elements.modalPublishConfirm) return;
+  const savedToken = localStorage.getItem("cosmic_github_token") || "";
+  if (elements.publishGithubToken) {
+    elements.publishGithubToken.value = savedToken;
+  }
+  if (elements.publishStatusBox) {
+    elements.publishStatusBox.classList.add("hidden");
+  }
+  if (elements.btnStartPublish) {
+    elements.btnStartPublish.disabled = false;
+    elements.btnStartPublish.textContent = "Опубликовать в репозиторий";
+  }
+  elements.modalPublishConfirm.classList.remove("hidden");
+}
+
+function closePublishModal() {
+  if (elements.modalPublishConfirm) {
+    elements.modalPublishConfirm.classList.add("hidden");
+  }
+}
+
+async function uploadOrUpdateFileToGitHub(token, path, contentBase64, commitMsg) {
+  const repo = "QwertyOzzi/web1";
+  const apiUrl = `https://api.github.com/repos/${repo}/contents/${path}`;
+
+  let sha = null;
+  try {
+    const res = await fetch(apiUrl, {
+      headers: {
+        "Authorization": `token ${token}`,
+        "Accept": "application/vnd.github.v3+json"
+      }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      sha = data.sha;
+    }
+  } catch (e) {
+    // File may not exist yet
+  }
+
+  const payload = {
+    message: commitMsg,
+    content: contentBase64,
+    branch: "main"
+  };
+  if (sha) {
+    payload.sha = sha;
+  }
+
+  const putRes = await fetch(apiUrl, {
+    method: "PUT",
+    headers: {
+      "Authorization": `token ${token}`,
+      "Accept": "application/vnd.github.v3+json",
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!putRes.ok) {
+    const errObj = await putRes.json().catch(() => ({}));
+    throw new Error(errObj.message || `HTTP error ${putRes.status}`);
+  }
+
+  return await putRes.json();
+}
+
+function stringToBase64Utf8(str) {
+  const bytes = new TextEncoder().encode(str);
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+
+async function startPublishingProcess() {
+  const token = (elements.publishGithubToken ? elements.publishGithubToken.value.trim() : "") || localStorage.getItem("cosmic_github_token") || "";
+  if (!token) {
+    alert("Пожалуйста, введите ваш GitHub Personal Access Token (начинается на ghp_)!");
+    if (elements.publishGithubToken) elements.publishGithubToken.focus();
+    return;
+  }
+
+  localStorage.setItem("cosmic_github_token", token);
+  elements.btnStartPublish.disabled = true;
+  elements.btnStartPublish.textContent = "Публикация...";
+  elements.publishStatusBox.classList.remove("hidden");
+  elements.publishStatusText.textContent = "1/3 Проверка изображений...";
+
+  try {
+    // 1. Process base64 images in products
+    for (let i = 0; i < state.products.length; i++) {
+      const p = state.products[i];
+      if (p.image_url && p.image_url.startsWith("data:image/")) {
+        elements.publishStatusText.textContent = `Загрузка обложки "${p.title}" в GitHub...`;
+        const commaIdx = p.image_url.indexOf(",");
+        const meta = p.image_url.substring(0, commaIdx);
+        const base64Data = p.image_url.substring(commaIdx + 1);
+        let ext = ".jpg";
+        if (meta.includes("png")) ext = ".png";
+        else if (meta.includes("gif")) ext = ".gif";
+        else if (meta.includes("webp")) ext = ".webp";
+        
+        const filename = `img_${Date.now()}_${Math.random().toString(36).substring(2, 6)}${ext}`;
+        const targetPath = `uploads/${filename}`;
+        await uploadOrUpdateFileToGitHub(token, targetPath, base64Data, `Upload product image ${filename}`);
+        p.image_url = targetPath;
+      }
+    }
+
+    // 2. Process base64 avatar in settings
+    if (state.settings.avatar_url && state.settings.avatar_url.startsWith("data:image/")) {
+      elements.publishStatusText.textContent = "Загрузка аватарки в GitHub...";
+      const commaIdx = state.settings.avatar_url.indexOf(",");
+      const base64Data = state.settings.avatar_url.substring(commaIdx + 1);
+      const filename = `avatar_${Date.now()}.png`;
+      const targetPath = `uploads/${filename}`;
+      await uploadOrUpdateFileToGitHub(token, targetPath, base64Data, `Upload avatar ${filename}`);
+      state.settings.avatar_url = targetPath;
+      applySettingsToUI();
+    }
+
+    // 3. Publish data/products.json
+    elements.publishStatusText.textContent = "2/3 Обновление каталога товаров (products.json)...";
+    const productsJson = JSON.stringify(state.products, null, 2);
+    await uploadOrUpdateFileToGitHub(token, "data/products.json", stringToBase64Utf8(productsJson), "Update products catalog via Cosmic Admin");
+    localStorage.setItem("cosmic_products", productsJson);
+
+    // 4. Publish data/settings.json
+    elements.publishStatusText.textContent = "3/3 Обновление настроек магазина (settings.json)...";
+    const settingsClean = { ...state.settings };
+    delete settingsClean.github_token;
+    const settingsJson = JSON.stringify(settingsClean, null, 2);
+    await uploadOrUpdateFileToGitHub(token, "data/settings.json", stringToBase64Utf8(settingsJson), "Update settings via Cosmic Admin");
+    localStorage.setItem("cosmic_settings", settingsJson);
+
+    elements.publishStatusText.textContent = "🎉 Успешно отправлено в репозиторий GitHub!";
+    showToast("🚀 Сайт успешно обновлен на GitHub! Изменения станут видны всем через 30-45 секунд.");
+    setTimeout(() => {
+      closePublishModal();
+    }, 1500);
+
+  } catch (err) {
+    console.error("Publish error:", err);
+    elements.publishStatusText.textContent = `❌ Ошибка публикации: ${err.message}`;
+    elements.btnStartPublish.disabled = false;
+    elements.btnStartPublish.textContent = "Попробовать снова";
+  }
+}
+
+function downloadJson(filename, obj) {
+  const blob = new Blob([JSON.stringify(obj, null, 2)], { type: "application/json;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast(`Файл ${filename} скачан!`);
+}
+
+// ==========================================
 // Event Listeners & Helpers
 // ==========================================
 
@@ -1146,6 +1361,20 @@ function setupEventListeners() {
     navigateToCatalog();
   });
 
+  // Publish to GitHub Button
+  if (elements.btnAdminPublish) {
+    elements.btnAdminPublish.addEventListener("click", openPublishModal);
+  }
+  if (elements.btnCancelPublish) {
+    elements.btnCancelPublish.addEventListener("click", closePublishModal);
+  }
+  if (elements.modalPublishClose) {
+    elements.modalPublishClose.addEventListener("click", closePublishModal);
+  }
+  if (elements.btnStartPublish) {
+    elements.btnStartPublish.addEventListener("click", startPublishingProcess);
+  }
+
   // ESCAPE Key to go back from product to catalog, or close any open modal
   window.addEventListener("keydown", (e) => {
     if (e.key === "Escape" || e.keyCode === 27) {
@@ -1154,8 +1383,14 @@ function setupEventListeners() {
         elements.modalLightbox.classList.add("hidden");
         return;
       }
-      // 2. Open Modals (including PIN modal)
-      const openModals = [elements.modalBuy, elements.modalProduct, elements.modalSettings, elements.modalAdminPin];
+      // 2. Open Modals (including PIN and Publish modals)
+      const openModals = [
+        elements.modalBuy,
+        elements.modalProduct,
+        elements.modalSettings,
+        elements.modalAdminPin,
+        elements.modalPublishConfirm
+      ];
       const visibleModal = openModals.find(m => m && !m.classList.contains("hidden"));
       if (visibleModal) {
         visibleModal.classList.add("hidden");
@@ -1209,7 +1444,13 @@ function setupEventListeners() {
   });
 
   // Overlay click to close modals
-  [elements.modalBuy, elements.modalProduct, elements.modalSettings, elements.modalAdminPin].forEach(modal => {
+  [
+    elements.modalBuy,
+    elements.modalProduct,
+    elements.modalSettings,
+    elements.modalAdminPin,
+    elements.modalPublishConfirm
+  ].forEach(modal => {
     if (modal) {
       modal.addEventListener("click", (e) => {
         if (e.target === modal) {

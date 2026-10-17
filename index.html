@@ -205,6 +205,16 @@
           </svg>
         </button>
 
+        <button id="btn-admin-publish" class="cosmic-cta-btn admin-only btn-publish-cosmic" title="Опубликовать изменения на GitHub для всех посетителей" aria-label="Опубликовать изменения на GitHub">
+          <span class="btn-glow-layer"></span>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path>
+            <path d="M12 12v9"></path>
+            <path d="m16 16-4-4-4 4"></path>
+          </svg>
+          <span>Опубликовать для всех</span>
+        </button>
+
         <button id="btn-add-product" class="cosmic-cta-btn admin-only" aria-label="Добавить новый товар">
           <span class="btn-glow-layer"></span>
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -686,6 +696,22 @@
             </div>
           </div>
         </div>
+        <div class="form-field admin-sync-block">
+          <label for="setting-github-token">
+            🚀 GitHub Token для публикации на сайт (ghp_...)
+          </label>
+          <input type="password" id="setting-github-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" />
+          <span class="field-hint">
+            Токен позволяет обновлять репозиторий прямо из браузера. Ваши изменения сразу появятся для всех посетителей!
+          </span>
+        </div>
+        <div class="form-field">
+          <label>Резервный экспорт данных</label>
+          <div class="export-btn-group">
+            <button type="button" class="btn-cosmic-ghost btn-sm" id="btn-export-products">📥 Скачать products.json</button>
+            <button type="button" class="btn-cosmic-ghost btn-sm" id="btn-export-settings">📥 Скачать settings.json</button>
+          </div>
+        </div>
         <div class="form-field">
           <label for="setting-admin-pin">PIN-код для входа в админку (по умолчанию: 7777)</label>
           <input type="password" id="setting-admin-pin" placeholder="7777" maxlength="8" />
@@ -727,6 +753,40 @@
           <button type="submit" class="cosmic-cta-btn">Разблокировать</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- MODAL 6: Publish Changes to GitHub Pages -->
+  <div id="modal-publish-confirm" class="cosmic-modal-overlay hidden">
+    <div class="cosmic-modal-box modal-box-publish">
+      <div class="modal-cosmic-glow"></div>
+      <div class="cosmic-modal-header">
+        <h3 class="modal-cosmic-title">🚀 Публикация изменений для всех</h3>
+        <button class="modal-cosmic-close" id="modal-publish-close" aria-label="Закрыть окно публикации">&times;</button>
+      </div>
+      <div class="cosmic-modal-body">
+        <p class="publish-dialog-desc">
+          Изменения сохранены в вашем браузере. Чтобы обновить живой сайт на GitHub Pages и сделать товары видимыми <strong>для всех посетителей с любых устройств</strong>, отправьте их в репозиторий:
+        </p>
+
+        <div class="form-field" id="publish-token-field">
+          <label for="publish-github-token">GitHub Personal Access Token (Classic Token с галочкой 'repo'):</label>
+          <input type="password" id="publish-github-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" />
+          <span class="field-hint">
+            Где взять: <a href="https://github.com/settings/tokens" target="_blank" rel="noopener noreferrer" style="color:var(--neon-cyan)">github.com/settings/tokens</a>. Токен сохраняется в вашем браузере.
+          </span>
+        </div>
+
+        <div id="publish-status-box" class="publish-status-box hidden">
+          <div class="publish-spinner" id="publish-spinner"></div>
+          <span id="publish-status-text">Отправка данных в репозиторий GitHub...</span>
+        </div>
+
+        <div class="cosmic-modal-footer">
+          <button type="button" class="btn-cosmic-ghost" id="btn-cancel-publish">Отмена</button>
+          <button type="button" class="cosmic-cta-btn" id="btn-start-publish">Опубликовать в репозиторий</button>
+        </div>
+      </div>
     </div>
   </div>
 

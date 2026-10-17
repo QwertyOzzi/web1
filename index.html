@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <!-- Primary Meta Tags -->
-  <title>Arz MODS • Cosmic Digital Store</title>
-  <meta name="title" content="Arz MODS • Cosmic Digital Store" />
-  <meta name="description" content="Приватные сборки, топовые скрипты и сочная графика для SA-MP / Arizona RP от Jimi Hopper. Быстрая выдача и поддержка." />
+  <title>Arz MODS • Jimi Hopper Workshop</title>
+  <meta name="title" content="Arz MODS • Jimi Hopper Workshop" />
+  <meta name="description" content="Приватные сборки, скрипты и графика для SA-MP / Arizona RP от Jimi Hopper. Быстрая выдача и поддержка." />
   <meta name="keywords" content="arizona rp, samp, gta sa, сборка samp, скрипты arizona, jimi hopper, colormod, arz mods, gta сборка" />
   <meta name="author" content="Jimi Hopper" />
   <meta name="robots" content="index, follow" />
-  <meta name="theme-color" content="#030408" />
+  <meta name="theme-color" content="#090b0e" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   
   <!-- Canonical & PWA -->
@@ -26,15 +26,15 @@
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Arz MODS" />
   <meta property="og:url" content="https://qwertyozzi.github.io/web1/" />
-  <meta property="og:title" content="Arz MODS • Cosmic Digital Store" />
-  <meta property="og:description" content="Приватные сборки, топовые скрипты и сочная графика для SA-MP / Arizona RP. Быстрая выдача и поддержка." />
+  <meta property="og:title" content="Arz MODS • Jimi Hopper Workshop" />
+  <meta property="og:description" content="Приватные сборки, скрипты и графика для SA-MP / Arizona RP. Быстрая выдача и поддержка." />
   <meta property="og:image" content="https://qwertyozzi.github.io/web1/uploads/byo_cover.jpeg" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://qwertyozzi.github.io/web1/" />
-  <meta name="twitter:title" content="Arz MODS • Cosmic Digital Store" />
-  <meta name="twitter:description" content="Приватные сборки, топовые скрипты и сочная графика для SA-MP / Arizona RP. Быстрая выдача и поддержка." />
+  <meta name="twitter:title" content="Arz MODS • Jimi Hopper Workshop" />
+  <meta name="twitter:description" content="Приватные сборки, скрипты и графика для SA-MP / Arizona RP. Быстрая выдача и поддержка." />
   <meta name="twitter:image" content="https://qwertyozzi.github.io/web1/uploads/byo_cover.jpeg" />
   
   <!-- Structured Data: JSON-LD (Schema.org WebSite, Store, OfferCatalog) -->
@@ -46,7 +46,7 @@
         "@type": "WebSite",
         "@id": "https://qwertyozzi.github.io/web1/#website",
         "url": "https://qwertyozzi.github.io/web1/",
-        "name": "Arz MODS • Cosmic Digital Store",
+        "name": "Arz MODS • Jimi Hopper Workshop",
         "description": "Приватные сборки, скрипты и сочная графика для SA-MP / Arizona RP от Jimi Hopper.",
         "inLanguage": "ru-RU",
         "potentialAction": {
@@ -131,29 +131,19 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- Interactive Cosmic Canvas Starfield & Soft Shimmer -->
-  <canvas id="cosmic-canvas"></canvas>
-  <div class="blue-shimmer-layer">
-    <div class="blue-shimmer shimmer-1"></div>
-    <div class="blue-shimmer shimmer-2"></div>
-    <div class="blue-shimmer shimmer-3"></div>
-    <div class="blue-shimmer shimmer-4"></div>
-  </div>
-
-  <!-- Cosmic Top App Navigation Bar -->
+  <!-- Top App Navigation Bar -->
   <header class="cosmic-navbar">
     <div class="nav-container">
       <div class="nav-brand" id="nav-brand-btn">
         <div class="brand-logo-cosmic">
           <span class="logo-core"></span>
-          <span class="logo-orbit"></span>
         </div>
         <div class="brand-text-block">
           <div class="brand-title-row">
             <span id="nav-brand-title" class="brand-name">Arz MODS</span>
-            <span class="cosmic-badge">✦ COSMIC</span>
+            <span class="cosmic-badge">WORKSHOP</span>
           </div>
-          <span class="brand-subtitle">Digital Storefront & Assemblies</span>
+          <span class="brand-subtitle">Private SA-MP &amp; Arizona RP Modding</span>
         </div>
       </div>
 
@@ -164,7 +154,7 @@
             <circle cx="11" cy="11" r="8"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
-          <input type="text" id="global-search" placeholder="Поиск модификаций, сборок, скриптов, аксов..." aria-label="Поиск товаров в каталоге" />
+          <input type="text" id="global-search" placeholder="Поиск модификаций, сборок, скриптов..." aria-label="Поиск товаров в каталоге" />
           <button id="search-clear-btn" class="search-clear hidden" aria-label="Очистить поисковый запрос">&times;</button>
         </div>
       </div>
@@ -206,7 +196,6 @@
         </button>
 
         <button id="btn-admin-publish" class="cosmic-cta-btn admin-only btn-publish-cosmic" title="Опубликовать изменения на GitHub для всех посетителей" aria-label="Опубликовать изменения на GitHub">
-          <span class="btn-glow-layer"></span>
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
             <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path>
             <path d="M12 12v9"></path>
@@ -216,7 +205,6 @@
         </button>
 
         <button id="btn-add-product" class="cosmic-cta-btn admin-only" aria-label="Добавить новый товар">
-          <span class="btn-glow-layer"></span>
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <line x1="12" y1="5" x2="12" y2="19"></line>
             <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -227,63 +215,62 @@
     </div>
   </header>
 
-  <!-- Main Content Wrapper (Widescreen up to 1360px) -->
+  <!-- Main Content Wrapper -->
   <div class="cosmic-main-layout">
 
     <!-- ========================================================
-         VIEW 1: STOREFRONT CATALOG (Widescreen Cosmic Showcase)
+         VIEW 1: STOREFRONT CATALOG (Workshop Showcase)
          ======================================================== -->
     <section id="catalog-view" class="view-panel">
-      <!-- Cosmic Hero Store Profile Banner -->
+      <!-- Store Profile Banner -->
       <div class="cosmic-hero-banner">
-        <div class="hero-cosmic-backdrop"></div>
         <div class="hero-content">
           <div class="hero-creator-card">
             <div class="creator-avatar-cosmic">
-              <img id="store-avatar" src="uploads/avatar.svg" alt="Аватар Jimi Hopper" class="avatar-img-cosmic" width="80" height="80" />
-              <div class="cosmic-status-pulse" title="В сети 24/7"></div>
+              <img id="store-avatar" src="uploads/avatar.svg" alt="Аватар Jimi Hopper" class="avatar-img-cosmic" width="76" height="76" />
+              <div class="cosmic-status-pulse" title="В сети"></div>
             </div>
             <div class="creator-info-cosmic">
               <div class="creator-name-row">
                 <h1 id="store-name" class="creator-title">Arz MODS • Jimi Hopper</h1>
-                <span class="cosmic-verified" title="Верифицированный продавец">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="#00f2fe">
+                <span class="cosmic-verified" title="Верифицированный автор">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="#3b82f6">
                     <path d="M12 2L14.4 5.4L18.6 5.8L19.2 10L22.6 12.6L20.4 16.2L21.4 20.4L17.2 21.4L14.8 24.6L12 23L9.2 24.6L6.8 21.4L2.6 20.4L3.6 16.2L1.4 12.6L4.8 10L5.4 5.8L9.6 5.4L12 2Z"/>
-                    <path d="M8.5 12.5L10.5 14.5L15.5 9.5" stroke="#06080e" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M8.5 12.5L10.5 14.5L15.5 9.5" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
                   </svg>
                 </span>
-                <span class="cosmic-pill-online">🛰️ ONLINE</span>
+                <span class="cosmic-pill-online">● В сети</span>
               </div>
               <p id="store-bio" class="creator-bio">
-                Приватные сборки, топовые скрипты и сочная графика для SA-MP / Arizona RP. Мгновенная выдача и личная поддержка.
+                Приватные сборки, скрипты и графика для SA-MP / Arizona RP. Быстрая выдача и поддержка.
               </p>
               <div class="creator-tags-row">
                 <a id="store-tg-link" href="https://t.me/jimi_hopper" target="_blank" rel="noopener noreferrer" class="cosmic-tg-link" aria-label="Написать в Telegram @jimi_hopper">
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.52 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .34z"/>
                   </svg>
                   <span id="store-tg-handle">@jimi_hopper</span>
                 </a>
-                <span class="cosmic-stat-chip">⚡ Мгновенный доступ</span>
-                <span class="cosmic-stat-chip">🛡️ 100% Без вирусов</span>
-                <span class="cosmic-stat-chip">🎮 Arizona RP Ready</span>
+                <span class="cosmic-stat-chip">✓ Проверено на Arizona RP</span>
+                <span class="cosmic-stat-chip">⚡ Мгновенная выдача архива</span>
+                <span class="cosmic-stat-chip">🛡️ Чистый код без стилеров</span>
               </div>
             </div>
           </div>
 
-          <!-- Quick Store Stats on Desktop -->
+          <!-- Quick Store Specs on Desktop -->
           <div class="hero-stats-panel">
             <div class="stat-box">
               <span class="stat-number" id="stats-total-products">3</span>
-              <span class="stat-label">Товаров в витрине</span>
+              <span class="stat-label">Модификации</span>
             </div>
             <div class="stat-box">
-              <span class="stat-number">100%</span>
-              <span class="stat-label">Оптимизация FPS</span>
+              <span class="stat-number">0.3.7</span>
+              <span class="stat-label">SA-MP &amp; ARZ</span>
             </div>
             <div class="stat-box">
-              <span class="stat-number">24/7</span>
-              <span class="stat-label">Telegram Поддержка</span>
+              <span class="stat-number">Telegram</span>
+              <span class="stat-label">Личная поддержка</span>
             </div>
           </div>
         </div>
@@ -314,7 +301,7 @@
         <div class="products-counter-badge" id="products-count">3 товара</div>
       </div>
 
-      <!-- Widescreen Responsive Grid of Products -->
+      <!-- Responsive Grid of Products -->
       <div class="products-showcase">
         <div id="products-grid" class="cosmic-products-grid">
           <!-- Dynamically inserted product cards -->
@@ -323,10 +310,13 @@
         <!-- Empty State -->
         <div id="empty-state" class="cosmic-empty-state hidden">
           <div class="empty-cosmic-ring">
-            <span class="empty-icon">🪐</span>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
           </div>
-          <h3 class="empty-title">В этом секторе товаров не найдено</h3>
-          <p class="empty-desc">Попробуйте изменить поисковый запрос или добавьте новый товар в витрину.</p>
+          <h3 class="empty-title">Товаров не найдено</h3>
+          <p class="empty-desc">Попробуйте изменить категорию или поисковый запрос.</p>
           <button id="empty-add-btn" class="cosmic-cta-btn admin-only">Добавить первый товар</button>
         </div>
       </div>
@@ -370,34 +360,34 @@
             </button>
           </div>
 
-          <!-- Feature Cards Grid -->
+          <!-- Technical Specs Matrix -->
           <div class="cosmic-features-matrix">
             <div class="matrix-card">
               <div class="matrix-icon">⚡</div>
               <div class="matrix-info">
-                <span class="matrix-title">FPS Буст & Оптимизация</span>
-                <span class="matrix-desc">Плавная стрельба без лагов даже на слабых ПК</span>
+                <span class="matrix-title">Оптимизация FPS</span>
+                <span class="matrix-desc">Стабильный фреймрейт для каптов и людных мест</span>
               </div>
             </div>
             <div class="matrix-card">
-              <div class="matrix-icon">🎨</div>
+              <div class="matrix-icon">🎯</div>
               <div class="matrix-info">
-                <span class="matrix-title">Приватная серая графика</span>
-                <span class="matrix-desc">Кинематографичные шейдеры и эффекты</span>
+                <span class="matrix-title">Графика &amp; ColorMod</span>
+                <span class="matrix-desc">Чёткая видимость без замыливания прицела</span>
               </div>
             </div>
             <div class="matrix-card">
-              <div class="matrix-icon">🔫</div>
+              <div class="matrix-icon">📦</div>
               <div class="matrix-info">
-                <span class="matrix-title">Кастомные скины и звуки</span>
-                <span class="matrix-desc">Заменки на калаши, обрез и медведя</span>
+                <span class="matrix-title">Комплектация</span>
+                <span class="matrix-desc">Скрипты, кастомные заменки и звуки</span>
               </div>
             </div>
             <div class="matrix-card">
               <div class="matrix-icon">🛡️</div>
               <div class="matrix-info">
-                <span class="matrix-title">Гарантия & Поддержка</span>
-                <span class="matrix-desc">Прямая связь с разработчиком сборки</span>
+                <span class="matrix-title">Безопасность</span>
+                <span class="matrix-desc">Проверено на отсутствие стилеров и вредоносного ПО</span>
               </div>
             </div>
           </div>
@@ -405,7 +395,7 @@
           <!-- Rich Detailed Description Panel -->
           <div class="cosmic-description-panel">
             <div class="panel-header-tabs">
-              <span class="active-tab">📖 Подробное описание модификации</span>
+              <span class="active-tab">Описание модификации</span>
             </div>
             <div id="detail-description" class="cosmic-rich-description">
               <!-- Rendered formatted description -->
@@ -413,7 +403,7 @@
           </div>
         </div>
 
-        <!-- RIGHT COLUMN: Sticky Cosmic Purchase Glass Console -->
+        <!-- RIGHT COLUMN: Sticky Purchase Console -->
         <div class="product-right-column">
           <div class="sticky-purchase-console">
             <div class="console-glass-card">
@@ -421,41 +411,40 @@
               <div class="console-badge-row">
                 <span class="pulse-chip">
                   <span class="pulse-ring"></span>
-                  Мгновенный доступ
+                  Мгновенная выдача
                 </span>
-                <span class="chip-format">Цифровой архив</span>
+                <span class="chip-format">ZIP-архив</span>
               </div>
 
               <h1 id="detail-title" class="product-headline">[Gta by Jimi_Hopper ]</h1>
 
-              <!-- Price Box with Cosmic Gradient -->
+              <!-- Price Box -->
               <div class="cosmic-price-box">
                 <div class="price-digits">
                   <span class="price-val" id="detail-price">490</span>
                   <span class="currency-sym" id="detail-currency">₽</span>
                 </div>
-                <span class="price-badge-tag">Лучшая цена</span>
+                <span class="price-badge-tag">Прямая покупка</span>
               </div>
 
               <!-- Author / Creator Micro Card -->
               <div class="console-creator-row">
-                <img id="detail-author-avatar" src="uploads/avatar.svg" alt="Аватар автора Jimi Hopper" class="creator-avatar-mini" width="44" height="44" />
+                <img id="detail-author-avatar" src="uploads/avatar.svg" alt="Аватар автора Jimi Hopper" class="creator-avatar-mini" width="40" height="40" />
                 <div class="creator-micro-info">
                   <div class="creator-micro-name">
                     <span id="detail-author-name">Jimi_Hopper</span>
                     <span class="mini-verified">✓</span>
                   </div>
-                  <span class="creator-micro-role">Автор & Продавец сборки</span>
+                  <span class="creator-micro-role">Автор &amp; Разработчик</span>
                 </div>
                 <a id="detail-tg-contact" href="https://t.me/jimi_hopper" target="_blank" rel="noopener noreferrer" class="btn-micro-chat" title="Написать в Telegram" aria-label="Написать автору в Telegram">
                   Telegram
                 </a>
               </div>
 
-              <!-- Primary CTA Action Button with Cosmic Glow -->
+              <!-- Primary CTA Action Button -->
               <button id="btn-buy-action" class="cosmic-checkout-btn" aria-label="Оформить заказ в Telegram">
-                <span class="checkout-glow-halo"></span>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.52 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .34z"/>
                 </svg>
                 <span id="buy-button-text">Купить в Telegram за 490 ₽</span>
@@ -465,15 +454,15 @@
               <div class="console-perks-list">
                 <div class="perk-item">
                   <span class="perk-ico">🔒</span>
-                  <span>Безопасная оплата (СБП, Карты, ЮMoney, Крипта)</span>
+                  <span>Оплата через СБП, Банковские карты, ЮMoney</span>
                 </div>
                 <div class="perk-item">
                   <span class="perk-ico">⚡</span>
-                  <span>Прямая ссылка на скачивание архива и скрипта</span>
+                  <span>Прямая ссылка на архив сразу после подтверждения</span>
                 </div>
                 <div class="perk-item">
                   <span class="perk-ico">💬</span>
-                  <span>Помощь в установке от автора в Telegram</span>
+                  <span>Помощь в установке и настройке от автора</span>
                 </div>
               </div>
 
@@ -615,7 +604,7 @@
           <div class="cosmic-image-uploader">
             <div class="uploader-preview" id="img-preview-box">
               <img id="img-preview" src="uploads/avatar.svg" alt="Превью" class="hidden" width="96" height="96" />
-              <span id="img-preview-placeholder">🪐 Нет изображения</span>
+              <span id="img-preview-placeholder">Нет изображения</span>
             </div>
             <div class="uploader-controls">
               <label class="btn-cosmic-upload">

@@ -152,7 +152,6 @@ const elements = {
 // ==========================================
 
 async function init() {
-  initCosmicStarfield();
   await Promise.all([loadSettings(), loadProducts()]);
   setupAdminAuth();
   setupEventListeners();
@@ -160,210 +159,6 @@ async function init() {
 }
 
 window.addEventListener("popstate", handleRoute);
-
-// ==========================================
-// Cosmic Soft Starfield & Ambient Blue Shimmer Engine
-// ==========================================
-
-function initCosmicStarfield() {
-  const canvas = document.getElementById("cosmic-canvas");
-  if (!canvas) return;
-  const ctx = canvas.getContext("2d");
-
-  let width = (canvas.width = window.innerWidth);
-  let height = (canvas.height = window.innerHeight);
-
-  window.addEventListener("resize", () => {
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
-  });
-
-  // Generate calm, layered, soft stars
-  const starsCount = 220;
-  const stars = [];
-  const starPalettes = [
-    { core: "rgba(255, 255, 255,", halo: "rgba(160, 210, 255," },
-    { core: "rgba(235, 245, 255,", halo: "rgba(100, 175, 255," },
-    { core: "rgba(215, 235, 255,", halo: "rgba(65, 140, 255," },
-    { core: "rgba(255, 255, 255,", halo: "rgba(180, 225, 255," }
-  ];
-
-  for (let i = 0; i < starsCount; i++) {
-    const depth = Math.random() * 0.7 + 0.3; // 0.3 to 1.0 (parallax & scale)
-    const radius = Math.random() < 0.85 ? (Math.random() * 0.9 + 0.4) : (Math.random() * 1.4 + 1.2);
-    stars.push({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      radius: radius * depth,
-      depth: depth,
-      baseAlpha: Math.random() * 0.45 + 0.25,
-      twinkleAmp: Math.random() * 0.25 + 0.1,
-      twinkleSpeed: Math.random() * 0.008 + 0.004,
-      twinklePhase: Math.random() * Math.PI * 2,
-      palette: starPalettes[Math.floor(Math.random() * starPalettes.length)],
-      vx: (Math.random() - 0.5) * 0.04 * depth,
-      vy: (Math.random() - 0.5) * 0.04 * depth
-    });
-  }
-
-  // Soft distant gliding shooting star
-  let meteor = null;
-  function spawnMeteor() {
-    const startX = Math.random() * (width * 0.8) + width * 0.1;
-    const startY = Math.random() * (height * 0.35);
-    meteor = {
-      x: startX,
-      y: startY,
-      length: Math.random() * 90 + 50,
-      speed: Math.random() * 6 + 7,
-      angle: Math.PI / 4 + (Math.random() - 0.5) * 0.15,
-      alpha: 0,
-      maxAlpha: Math.random() * 0.45 + 0.25,
-      fadingIn: true
-    };
-  }
-
-  // Smooth mouse damping parallax
-  let targetMouseX = 0, targetMouseY = 0;
-  let curMouseX = 0, curMouseY = 0;
-
-  window.addEventListener("mousemove", (e) => {
-    targetMouseX = (e.clientX - width / 2) * 0.018;
-    targetMouseY = (e.clientY - height / 2) * 0.018;
-  });
-
-  let startTime = performance.now();
-
-  function renderFrame(now) {
-    const elapsed = now - startTime;
-    const t = elapsed * 0.001;
-
-    // Smooth lerp mouse position
-    curMouseX += (targetMouseX - curMouseX) * 0.04;
-    curMouseY += (targetMouseY - curMouseY) * 0.04;
-
-    // 1. Fill deep true black background
-    ctx.fillStyle = "#000000";
-    ctx.fillRect(0, 0, width, height);
-
-    // 2. Draw subtle, shimmering iridescent deep blue light
-    ctx.save();
-    // Ambient shimmering node 1 (deep sapphire)
-    const g1X = width * 0.35 + Math.sin(t * 0.12) * 110;
-    const g1Y = height * 0.38 + Math.cos(t * 0.15) * 80;
-    const g1Radius = Math.max(width, height) * 0.65;
-    const g1 = ctx.createRadialGradient(g1X, g1Y, 20, g1X, g1Y, g1Radius);
-    const g1Alpha = 0.13 + Math.sin(t * 0.2) * 0.04;
-    g1.addColorStop(0, `rgba(18, 54, 150, ${g1Alpha})`);
-    g1.addColorStop(0.5, `rgba(8, 28, 85, ${g1Alpha * 0.5})`);
-    g1.addColorStop(1, "rgba(0, 0, 0, 0)");
-    ctx.fillStyle = g1;
-    ctx.fillRect(0, 0, width, height);
-
-    // Ambient shimmering node 2 (oceanic midnight cyan-blue)
-    const g2X = width * 0.72 + Math.cos(t * 0.14) * 100;
-    const g2Y = height * 0.62 + Math.sin(t * 0.18) * 90;
-    const g2Radius = Math.max(width, height) * 0.58;
-    const g2 = ctx.createRadialGradient(g2X, g2Y, 20, g2X, g2Y, g2Radius);
-    const g2Alpha = 0.10 + Math.cos(t * 0.22) * 0.03;
-    g2.addColorStop(0, `rgba(0, 115, 215, ${g2Alpha})`);
-    g2.addColorStop(0.55, `rgba(6, 38, 98, ${g2Alpha * 0.45})`);
-    g2.addColorStop(1, "rgba(0, 0, 0, 0)");
-    ctx.fillStyle = g2;
-    ctx.fillRect(0, 0, width, height);
-    ctx.restore();
-
-    // 3. Render soft, smooth stars
-    for (let s of stars) {
-      // Calculate ultra-smooth sinusoidal breathing alpha
-      const currentAlpha = Math.max(0.08, Math.min(0.9, s.baseAlpha + Math.sin(t * (s.twinkleSpeed * 100) + s.twinklePhase) * s.twinkleAmp));
-
-      // Organic gentle drift
-      s.x += s.vx;
-      s.y += s.vy;
-
-      if (s.x < -20) s.x = width + 20;
-      if (s.x > width + 20) s.x = -20;
-      if (s.y < -20) s.y = height + 20;
-      if (s.y > height + 20) s.y = -20;
-
-      const posX = s.x + curMouseX * s.depth;
-      const posY = s.y + curMouseY * s.depth;
-
-      // Draw soft star with halo
-      if (s.radius > 1.0) {
-        // Larger stars: soft radial gradient for a velvety glow
-        const haloRadius = s.radius * 2.8;
-        const starGrad = ctx.createRadialGradient(posX, posY, 0, posX, posY, haloRadius);
-        starGrad.addColorStop(0, `${s.palette.core} ${currentAlpha})`);
-        starGrad.addColorStop(0.35, `${s.palette.halo} ${currentAlpha * 0.65})`);
-        starGrad.addColorStop(0.75, `${s.palette.halo} ${currentAlpha * 0.2})`);
-        starGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
-
-        ctx.fillStyle = starGrad;
-        ctx.beginPath();
-        ctx.arc(posX, posY, haloRadius, 0, Math.PI * 2);
-        ctx.fill();
-      } else {
-        // Smaller distant stars: smooth soft circle
-        ctx.fillStyle = `${s.palette.core} ${currentAlpha * 0.85})`;
-        ctx.beginPath();
-        ctx.arc(posX, posY, s.radius, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
-
-    // 4. Draw delicate, quiet gliding meteor
-    if (meteor) {
-      if (meteor.fadingIn) {
-        meteor.alpha += 0.025;
-        if (meteor.alpha >= meteor.maxAlpha) {
-          meteor.alpha = meteor.maxAlpha;
-          meteor.fadingIn = false;
-        }
-      } else {
-        meteor.alpha -= 0.012;
-      }
-
-      ctx.save();
-      const tailX = meteor.x - Math.cos(meteor.angle) * meteor.length;
-      const tailY = meteor.y - Math.sin(meteor.angle) * meteor.length;
-
-      const trailGrad = ctx.createLinearGradient(meteor.x, meteor.y, tailX, tailY);
-      trailGrad.addColorStop(0, `rgba(255, 255, 255, ${meteor.alpha})`);
-      trailGrad.addColorStop(0.3, `rgba(80, 180, 255, ${meteor.alpha * 0.7})`);
-      trailGrad.addColorStop(1, "rgba(20, 80, 180, 0)");
-
-      ctx.strokeStyle = trailGrad;
-      ctx.lineWidth = 1.6;
-      ctx.beginPath();
-      ctx.moveTo(meteor.x, meteor.y);
-      ctx.lineTo(tailX, tailY);
-      ctx.stroke();
-
-      // Soft meteor head
-      ctx.fillStyle = `rgba(255, 255, 255, ${meteor.alpha})`;
-      ctx.beginPath();
-      ctx.arc(meteor.x, meteor.y, 1.2, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-
-      meteor.x += Math.cos(meteor.angle) * meteor.speed;
-      meteor.y += Math.sin(meteor.angle) * meteor.speed;
-
-      if (meteor.alpha <= 0 || meteor.x > width + 100 || meteor.y > height + 100) {
-        meteor = null;
-      }
-    } else if (Math.random() < 0.003) {
-      // Occasional peaceful meteor
-      spawnMeteor();
-    }
-
-    requestAnimationFrame(renderFrame);
-  }
-
-  requestAnimationFrame(renderFrame);
-}
 
 // ==========================================
 // Media URL Resolver (GitHub Pages & Local Server Compatibility)
@@ -429,7 +224,7 @@ function applySettingsToUI() {
   const { store_name, avatar_url, bio, telegram_username } = state.settings;
   elements.navBrandTitle.textContent = store_name || "Arz MODS";
   elements.storeName.textContent = store_name || "Arz MODS";
-  document.title = `${store_name} • Cosmic Digital Store`;
+  document.title = `${store_name} • Workshop`;
 
   const resolvedAvatar = resolveMediaUrl(avatar_url || "uploads/avatar.svg");
   elements.storeAvatar.src = resolvedAvatar;
@@ -545,7 +340,7 @@ function showCatalogView() {
   elements.btnBackNav.classList.add("hidden");
   
   // Dynamic SEO meta tags for Catalog
-  document.title = `${state.settings.store_name || "Arz MODS"} • Cosmic Digital Store`;
+  document.title = `${state.settings.store_name || "Arz MODS"} • Workshop`;
   const metaDesc = document.querySelector('meta[name="description"]');
   if (metaDesc) {
     metaDesc.setAttribute("content", state.settings.bio || "Приватные сборки, топовые скрипты и сочная графика для SA-MP / Arizona RP от Jimi Hopper.");
@@ -671,28 +466,16 @@ function renderCatalog() {
         <p class="card-snippet">${escapeHtml(descText)}</p>
         <div class="card-bottom-row">
           <span class="card-open-link">
-            Подробнее &rarr;
+            Смотреть детали
           </span>
           <span class="card-instant-tag">
-            ⚡ Мгновенно
+            Прямая выдача
           </span>
         </div>
       </div>
     `;
 
-    // 3D Card Hover Tilt effect
-    card.addEventListener("mousemove", (e) => {
-      const rect = card.getBoundingClientRect();
-      const x = e.clientX - rect.left - rect.width / 2;
-      const y = e.clientY - rect.top - rect.height / 2;
-      const rotateX = (-y / rect.height) * 10;
-      const rotateY = (x / rect.width) * 10;
-      card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-6px)`;
-    });
 
-    card.addEventListener("mouseleave", () => {
-      card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)`;
-    });
 
     card.addEventListener("click", () => {
       navigateToProduct(prod.slug || prod.id);
